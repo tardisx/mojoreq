@@ -10,9 +10,14 @@ my @categorys = qw/bug feature/;
 
 my $db = DBI->connect('dbi:SQLite:dbname=mojoreq.db') || die DBI->errstr;
 
-get '/' => sub {
+get '/list/:state' => sub {
   my $self = shift;
-  my $list = load_requests();
+
+  my $state = $self->param('state');
+  my $args = { complete => $state eq 'open' ? 0 : 1 };
+
+  my $list = load_requests($args);
+  
   $self->stash->{requests} = $list;
   $self->render('list');
 };
@@ -21,7 +26,7 @@ get '/req/:req' => [req => qr/\d+/]  => sub {
   my $self = shift;
   my $req_id = $self->param('req');
 
-  $self->stash->{products} = \@products;
+  $self->stash->{products}  = \@products;
   $self->stash->{categorys} = \@categorys;
 
   load_param_from_request_id($self, $req_id);
@@ -108,6 +113,7 @@ sub save_request_from_param {
   $req_save->{complete} = 0 if (! $req_save->{complete});
 
   if ($req_save->{id}) {
+    # load old record
     update_db($req_save);
   }
   else {
@@ -180,12 +186,18 @@ sub insert_db {
 }
 
 sub load_requests {
+  my $args = shift || {};
+  $args->{complete} = 0 if (! $args->{complete});
+  
+  my $sth = $db->prepare("SELECT * FROM request WHERE complete = ?");
+  $sth->execute($args->{complete});
+
   my @list;
-  my $sth = $db->prepare("SELECT * FROM request WHERE complete = 0");
-  $sth->execute();
+  
   while (my $row = $sth->fetchrow_hashref()) {
     push @list, $row;
   }
+  
   return \@list;
 }
 
@@ -258,8 +270,8 @@ Welcome to Mojolicious!
 <tr><th>id</th><th>subject</th><th>last modified</th></tr>
 % foreach (@$requests) {
 <tr>
-  <th><%= $_->{id} %></th>
-  <td><a href="/req/<%= $_->{id} %>"><%= $_->{subject} =%></a></td>
+  <th><%= link_to reqreq => {req => $_->{id} } => begin %> <%= $_->{id} %> <% end %></th>
+  <td><%= $_->{subject} %></td>
   <td><%= scalar localtime ($_->{modified}) %></td>
 </tr>
 % }
@@ -345,14 +357,13 @@ Welcome to Mojolicious!
     <div id="nav">
       <ul>
         <li>[<a href="/req/add">Add a new request</a>]</li>
-        <li>[<a href="/">List open requests</a>]</li>
+        <li>[<a href="/list/open">List open requests</a>]</li>
       </ul>
     </div>
     <div id="main">
       <%= content %>
     </div>
     <div id="sidebar">
-      &nbsp;
     </div>
     <div id="footer">
       <p>MojoReq: [<a href="https://github.com/tardisx/mojoreq">https://github.com/tardisx/mojoreq</a>]</p>
