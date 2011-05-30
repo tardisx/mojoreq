@@ -107,14 +107,10 @@ sub save_request_from_param {
   # fix booleans
   $req_save->{complete} = 0 if (! $req_save->{complete});
 
-  warn "UPDATING: " .Dumper $req_save;
-
   if ($req_save->{id}) {
-    warn "ITS AN UPDATE!";
     update_db($req_save);
   }
   else {
-    warn "ITS AN INSERT";
     my $id = insert_db($req_save);
     $self->param('id', $id);  # set the id
   }
@@ -132,7 +128,6 @@ sub load_param_from_request_id {
   $request->{complete} = undef if (! $request->{complete});
 
   foreach (@request_fields) {
-    warn "SETTING $_ to $request->{$_}";
     $self->param($_, $request->{$_});
   }
 
@@ -160,8 +155,6 @@ sub update_db {
     $sql.= "$_ = ?, ";
   }
   $sql =~ s/, $/ WHERE id = ?/;
-
-  warn "EXECUTING $sql";
 
   my $sth = $db->prepare($sql) || die $db->errstr;
   $sth->execute((map {$hash->{$_}} @fields), $hash->{id}) || die $db->errstr;
