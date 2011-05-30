@@ -1,3 +1,29 @@
 Single file mojolicious based request tracker.
 
-Because there was nothing perl with minimal mindset.
+I wanted to track my project bugs / features.
+
+I wanted to keep my own data on my own machine.
+
+I wanted something that was perl, and minimalistic.
+ 
+There wasn't anything, so I wrote this.
+
+--------------------------------------------------------------------------------
+
+Installing (this will be easier in future):
+
+# make a directory for the thing
+$ mkdir mojoreq
+
+# grab the source:
+$ wget https://github.com/tardisx/mojoreq/raw/master/mojoreq.pl > mojoreq.pl
+
+# setup the db
+$ sqlite3 mojoreq.db
+# now paste the database schema from the mojoreq.pl
+
+# run it
+$ ./mojoreq.pl daemon --listen http://\*:3000
+
+# use it
+# open your web browser to http://localhost:3000
