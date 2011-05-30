@@ -279,6 +279,9 @@ Welcome to Mojolicious!
 		padding:0;
 		color:#000;
 		background:#a7a09a;
+                font-family: Verdana, Arial, Helvetica, Sans-Serif;
+                font-size: 8pt;
+
 	}
 	#wrap {
 		width:750px;
@@ -341,8 +344,8 @@ Welcome to Mojolicious!
     </div>
     <div id="nav">
       <ul>
-        <li><a href="/req/add">Add a new request</a></li>
-        <li><a href="/">List open requests</a></li>
+        <li>[<a href="/req/add">Add a new request</a>]</li>
+        <li>[<a href="/">List open requests</a>]</li>
       </ul>
     </div>
     <div id="main">
@@ -352,7 +355,7 @@ Welcome to Mojolicious!
       &nbsp;
     </div>
     <div id="footer">
-      <p><a href="https://github.com/tardisx/mojoreq">https://github.com/tardisx/mojoreq</a></p>
+      <p>MojoReq: [<a href="https://github.com/tardisx/mojoreq">https://github.com/tardisx/mojoreq</a>]</p>
     </div>
   </div>
 </body>
