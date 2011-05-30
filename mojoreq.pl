@@ -191,14 +191,12 @@ Welcome to Mojolicious!
 
 @@ req.html.ep
 % layout 'default';
-% title 'Request ' . param('id');
-<p>Looking at record <%= param('id') %>?</p>
+% title 'Request ' . param('id') . ' - ' . param('subject');
 <%= include 'req_form' %>
 
 @@ req_add.html.ep
 % layout 'default';
 % title 'Add Request';
-<p>Add that request!</p>
 <%= include 'req_form' %>
 
 @@ req_form.html.ep
@@ -207,25 +205,24 @@ Welcome to Mojolicious!
 
 % if (param('id')) {
   <%= hidden_field 'id' => param('id') %>
-  <p>Record: <%= param('id') %></p>
-% } else {
-  <p>Record: New</p>
 % }
 
 <table>
   <tr>
-    <td>Subject:</td>
-    <td><%= text_field 'subject', size => 80 %></td>
+    <th>Subject:</th>
+    <td><%= text_field 'subject', size => 65 %></td>
   </tr>
 
   <tr>
-    <td>Complete?:</td>
+    <th>Description:</th>
+    <td><%= text_area 'description', rows => 8, cols => 45 %></td>
+  </tr>
+
+  <tr>
+    <th>Complete?:</th>
     <td><%= check_box 'complete' => 1 %></td>
   </tr>
-  <tr>
-    <td>Description:</td>
-    <td><%= text_area 'description', rows => 8, cols => 80 %></td>
-  </tr>
+
 </table>
 
 <%= submit_button %>
@@ -240,6 +237,7 @@ Welcome to Mojolicious!
 % layout 'default';
 % title 'List';
 <table>
+<tr><th>id</th><th>subject</th><th>last modified</th></tr>
 % foreach (@$requests) {
 <tr>
   <th><%= $_->{id} %></th>
@@ -248,9 +246,96 @@ Welcome to Mojolicious!
 </tr>
 % }
 </table>
+ 
+% if (! @$requests) {
+<p>No records</p>
+% }
 
 @@ layouts/default.html.ep
 <!doctype html><html>
-  <head><title><%= title %></title></head>
-  <body><%= content %></body>
+  <head><title><%= title %></title>
+  <style type="text/css" media="screen, print, projection">
+	body,
+	html {
+		margin:0;
+		padding:0;
+		color:#000;
+		background:#a7a09a;
+	}
+	#wrap {
+		width:750px;
+		margin:0 auto;
+		background:#99c;
+	}
+	#header {
+    	padding:5px 10px;
+		background:#ddd;
+	}
+	h1 {
+	    margin:0;
+    }
+	#nav {
+		padding:5px 10px;
+		background:#c99;
+	}
+	#nav ul {
+		margin:0;
+		padding:0;
+		list-style:none;
+	}
+	#nav li {
+		display:inline;
+		margin:0;
+		padding:0;
+	}
+	#main {
+		float:left;
+		width:480px;
+		padding:10px;
+		background:#9c9;
+	}
+	h2 {
+		margin:0 0 1em;
+	}
+	#sidebar {
+		float:right;
+		width:230px;
+		padding:10px;
+		background:#99c;
+	}
+	#footer {
+		clear:both;
+		padding:5px 10px;
+		background:#cc9;
+	}
+	#footer p {
+		margin:0;
+    }
+	* html #footer {
+		height:1px;
+	}
+	</style>
+  </head>
+  <body>
+  <div id="wrap">
+    <div id="header">
+      <h1><%= title %></h1>
+    </div>
+    <div id="nav">
+      <ul>
+        <li><a href="/req/add">Add a new request</a></li>
+        <li><a href="/">List open requests</a></li>
+      </ul>
+    </div>
+    <div id="main">
+      <%= content %>
+    </div>
+    <div id="sidebar">
+      &nbsp;
+    </div>
+    <div id="footer">
+      <p><a href="https://github.com/tardisx/mojoreq">https://github.com/tardisx/mojoreq</a></p>
+    </div>
+  </div>
+</body>
 </html>
