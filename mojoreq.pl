@@ -4,7 +4,9 @@ use Mojolicious::Lite;
 use DBI;
 use Data::Dumper;
 
-my @request_fields = qw/id subject description complete modified/;
+my @request_fields = qw/id subject description complete product category modified/;
+my @products = qw/product1 product2/;
+my @categorys = qw/bug feature/;
 
 my $db = DBI->connect('dbi:SQLite:dbname=mojoreq.db') || die DBI->errstr;
 
@@ -19,6 +21,9 @@ get '/req/:req' => [req => qr/\d+/]  => sub {
   my $self = shift;
   my $req_id = $self->param('req');
 
+  $self->stash->{products} = \@products;
+  $self->stash->{categorys} = \@categorys;
+
   load_param_from_request_id($self, $req_id);
 
   $self->render('req');
@@ -26,11 +31,19 @@ get '/req/:req' => [req => qr/\d+/]  => sub {
 
 get '/req/add' => sub {
   my $self = shift;
+
+  $self->stash->{products} = \@products;
+  $self->stash->{categorys} = \@categorys;
+
   $self->render('req_add');
 };
 
 post '/req/:req' => [req => qr/\d+/]  => sub {
   my $self = shift;
+
+  $self->stash->{products} = \@products;
+  $self->stash->{categorys} = \@categorys;
+
   eval { 
     save_request_from_param($self);
   };
@@ -46,6 +59,10 @@ post '/req/:req' => [req => qr/\d+/]  => sub {
 post '/req/add' => sub {
   my $self = shift;
   my $request;
+
+  $self->stash->{products} = \@products;
+  $self->stash->{categorys} = \@categorys;
+
   eval { 
     save_request_from_param($self);
   };
@@ -58,11 +75,6 @@ post '/req/add' => sub {
   }
 };
 
-get '/welcome' => sub {
-  my $self = shift;
-  $self->render('index');
-};
-
 app->start;
 
 =pod
@@ -70,6 +82,8 @@ app->start;
 CREATE TABLE request (
   id       INTEGER PRIMARY KEY,
   subject  TEXT NOT NULL,
+  product  TEXT NOT NULL,
+  category TEXT NOT NULL,
   description TEXT NOT NULL,
   modified INTEGER NOT NULL,
   complete BOOLEAN DEFAULT 0
@@ -207,10 +221,21 @@ Welcome to Mojolicious!
   <%= hidden_field 'id' => param('id') %>
 % }
 
+
 <table>
   <tr>
     <th>Subject:</th>
     <td><%= text_field 'subject', size => 65 %></td>
+  </tr>
+
+  <tr>
+    <th>Product:</th>
+    <td><%= select_field product => stash('products') %>
+  </tr>
+
+  <tr>
+    <th>Category:</th>
+    <td><%= select_field category => stash('categorys') %>
   </tr>
 
   <tr>
