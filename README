@@ -1,12 +1,21 @@
 Single file mojolicious based request tracker.
 
-I wanted to track my project bugs / features.
-
-I wanted to keep my own data on my own machine.
-
-I wanted something that was perl, and minimalistic.
+* I wanted to track my project bugs / features.
+* I wanted to keep my own data on my own machine.
+* I wanted something that was perl, and minimalistic.
  
 There wasn't anything, so I wrote this.
+
+Features:
+
+* Basic request tracking
+* Products and Categories for requests
+* Basic web interface
+* Really really fast :-)
+* Did I mention it's minimalistic?
+
+As I redefine the boundaries of 'essential' and 'minimalistic', the 
+feature list will grow.
 
 --------------------------------------------------------------------------------
 
