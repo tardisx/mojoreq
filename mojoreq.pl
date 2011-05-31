@@ -305,7 +305,7 @@ Welcome to Mojolicious!
 
 	}
 	#wrap {
-		width:750px;
+		width:850px;
 		margin:0 auto;
 		background:#99c;
 	}
@@ -332,7 +332,7 @@ Welcome to Mojolicious!
 	}
 	#main {
 		float:left;
-		width:480px;
+		width:580px;
 		padding:10px;
 		background:#9c9;
 	}
