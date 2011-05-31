@@ -267,6 +267,7 @@ Welcome to Mojolicious!
 @@ list.html.ep
 % layout 'default';
 % title 'List';
+% use Time::Duration qw/ago concise/;
 <table>
   <tr>
     <th>id</th>
@@ -281,7 +282,7 @@ Welcome to Mojolicious!
     <td><%= $_->{product} %></td>
     <td><%= $_->{category} %></td>
     <td><%= $_->{subject} %></td>
-    <td><%= scalar localtime ($_->{modified}) %></td>
+    <td><%= concise(ago(time()- $_->{modified})) %></td>
   </tr>
 % }
 </table>
