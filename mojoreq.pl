@@ -316,7 +316,7 @@ Welcome to Mojolicious!
 	}
 	h1 {
 	    margin:0;
-    }
+        }
 	#nav {
 		padding:5px 10px;
 		background:#c99;
@@ -354,6 +354,10 @@ Welcome to Mojolicious!
 	#footer p {
 		margin:0;
         }
+        a:link    {color: blue}
+        a:visited {color: blue}
+        a:active  {color: blue}
+        a:hover   {color: red;}
         p.message {
                 color: #32e;
                 font-size: 14px;
