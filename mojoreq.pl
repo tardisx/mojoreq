@@ -236,11 +236,15 @@ Welcome to Mojolicious!
   <%= hidden_field 'id' => param('id') %>
 % }
 
+% my $size_adjust = 0;
+% if ($self->req->headers->user_agent =~ /iPhone/) {
+%   $size_adjust = 20;
+% }
 
 <table>
   <tr>
     <th>Subject:</th>
-    <td><%= text_field 'subject', size => 65 %></td>
+    <td><%= text_field 'subject', size => 45 - $size_adjust %></td>
   </tr>
 
   <tr>
@@ -255,7 +259,7 @@ Welcome to Mojolicious!
 
   <tr>
     <th>Description:</th>
-    <td><%= text_area 'description', rows => 8, cols => 45 %></td>
+    <td><%= text_area 'description', rows => 8, cols => 45 - $size_adjust %></td>
   </tr>
 
   <tr>
@@ -298,7 +302,11 @@ Welcome to Mojolicious!
 
 @@ layouts/default.html.ep
 <!doctype html><html>
-  <head><title><%= title %></title>
+  <head>
+    <title><%= title %></title>
+% if ($self->req->headers->user_agent =~ /iPhone/) {
+    <meta name="viewport" content="user-scalable=no, width=device-width" />
+% }
   <style type="text/css" media="screen, print, projection">
 	body,
 	html {
@@ -311,7 +319,11 @@ Welcome to Mojolicious!
 
 	}
 	#wrap {
+% if ($self->req->headers->user_agent =~ /iPhone/) {
+		width: device-width;
+% } else {
 		width:850px;
+% }
 		margin:0 auto;
 		background:#99c;
 	}
@@ -338,7 +350,11 @@ Welcome to Mojolicious!
 	}
 	#main {
 		float:left;
-		width:580px;
+% if ($self->req->headers->user_agent =~ /iPhone/) {
+		width: device-width;
+% } else {
+		width: 580px;
+% }
 		padding:10px;
 		background:#9c9;
 	}
