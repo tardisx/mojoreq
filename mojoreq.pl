@@ -57,7 +57,8 @@ post '/req/:req' => [req => qr/\d+/]  => sub {
     $self->render('req');
   }
   else {
-    $self->render('req');
+    $self->flash(message => "Request " .$self->param('id') . " updated."); 
+    $self->redirect_to('/req/'.$self->param('id'));
   }
 };
 
@@ -76,6 +77,7 @@ post '/req/add' => sub {
     $self->render('req_add');
   }
   else {
+    $self->flash(message => "Request " .$self->param('id') . " created."); 
     $self->redirect_to('/req/'.$self->param('id'));
   }
 };
@@ -105,8 +107,11 @@ sub save_request_from_param {
     $req_save->{$_} = $self->param($_);
   }
 
+  # validate
+  die "bad subject\n" if (! $req_save->{subject});
+  die "bad description\n" if (! $req_save->{description});
+
   # some special cases / default values
-  $req_save->{subject} = '[no subject]' if (! $req_save->{subject});
   $req_save->{modified} = time();
 
   # fix booleans
@@ -259,10 +264,6 @@ Welcome to Mojolicious!
 
 <% end %>
 
-% if (stash('error')) {
-<h4><%= stash('error') %></h4>
-% }
-
 @@ list.html.ep
 % layout 'default';
 % title 'List';
@@ -343,7 +344,15 @@ Welcome to Mojolicious!
 	}
 	#footer p {
 		margin:0;
-    }
+        }
+        p.message {
+                color: #32e;
+                font-size: 14px;
+        }
+        p.error {
+                color: #f00;
+                font-size: 14px;
+        }
 	* html #footer {
 		height:1px;
 	}
@@ -361,6 +370,12 @@ Welcome to Mojolicious!
       </ul>
     </div>
     <div id="main">
+<% if (my $message = flash 'message' ) { %>
+      <p class="message"><%= $message %></p>
+<% } %>
+<% if (my $error = stash 'error' ) { %>
+      <p class="error"><%= $error %></p>
+<% } %>
       <%= content %>
     </div>
     <div id="sidebar">
