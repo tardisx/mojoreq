@@ -10,6 +10,11 @@ my @categorys = qw/bug feature/;
 
 my $db = DBI->connect('dbi:SQLite:dbname=mojoreq.db') || die DBI->errstr;
 
+get '/' => sub {
+  my $self = shift;
+  $self->redirect_to('/list/open');
+};
+
 get '/list/:state' => sub {
   my $self = shift;
 
