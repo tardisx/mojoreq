@@ -268,13 +268,21 @@ Welcome to Mojolicious!
 % layout 'default';
 % title 'List';
 <table>
-<tr><th>id</th><th>subject</th><th>last modified</th></tr>
+  <tr>
+    <th>id</th>
+    <th>product</th>
+    <th>category</th>
+    <th>subject</th>
+    <th>last modified</th>
+  </tr>
 % foreach (@$requests) {
-<tr>
-  <th><%= link_to reqreq => {req => $_->{id} } => begin %> <%= $_->{id} %> <% end %></th>
-  <td><%= $_->{subject} %></td>
-  <td><%= scalar localtime ($_->{modified}) %></td>
-</tr>
+  <tr>
+    <th><%= link_to reqreq => {req => $_->{id} } => begin %> <%= $_->{id} %> <% end %></th>
+    <td><%= $_->{product} %></td>
+    <td><%= $_->{category} %></td>
+    <td><%= $_->{subject} %></td>
+    <td><%= scalar localtime ($_->{modified}) %></td>
+  </tr>
 % }
 </table>
  
