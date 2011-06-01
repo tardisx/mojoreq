@@ -2,9 +2,8 @@
 
 use Mojolicious::Lite;
 use DBI;
-use Data::Dumper;
 
-my @request_fields = qw/id subject description complete product category modified/;
+my @request_fields = qw/id subject description complete product category created modified/;
 my @products = qw/product1 product2/;
 my @categorys = qw/bug feature/;
 
@@ -33,6 +32,7 @@ get '/req/:req' => [req => qr/\d+/]  => sub {
 
   $self->stash->{products}  = \@products;
   $self->stash->{categorys} = \@categorys;
+  $self->stash->{log_sth}   = get_log_handle($req_id);
 
   load_param_from_request_id($self, $req_id);
 
@@ -54,8 +54,14 @@ post '/req/:req' => [req => qr/\d+/]  => sub {
   $self->stash->{products} = \@products;
   $self->stash->{categorys} = \@categorys;
 
-  eval { 
+  eval {
+    my $id = $self->param('req');
+    my $old = load_db($id);
     save_request_from_param($self);
+    my $new = load_db($id); 
+    foreach my $diff (differences($old, $new)) {
+      add_audit($id, 'change', $diff);
+    }
   };
   if ($@) {
     $self->stash->{error} = $@;
@@ -97,8 +103,16 @@ CREATE TABLE request (
   product  TEXT NOT NULL,
   category TEXT NOT NULL,
   description TEXT NOT NULL,
+  created  INTEGER NOT NULL,
   modified INTEGER NOT NULL,
   complete BOOLEAN DEFAULT 0
+);
+
+CREATE TABLE request_audit (
+  id        INTEGER PRIMARY KEY,
+  rid       INTEGER REFERENCES request(id),
+  type      TEXT NOT NULL,
+  entry     TEXT NOT NULL
 );
 
 =cut
@@ -107,8 +121,11 @@ sub save_request_from_param {
   my $self = shift;
 
   my $req_save;
+
+  # don't mess with the created date
+  my @fields = grep !/created/, @request_fields;
   
-  foreach (@request_fields) {
+  foreach (@fields) {
     $req_save->{$_} = $self->param($_);
   }
 
@@ -127,9 +144,13 @@ sub save_request_from_param {
     update_db($req_save);
   }
   else {
+    $req_save->{created} = time();
     my $id = insert_db($req_save);
     $self->param('id', $id);  # set the id
   }
+
+  add_audit($self->param('id'), 'log', $self->param('log')) 
+    if ($self->param('log'));
 
   return;
 }
@@ -162,9 +183,16 @@ sub load_db {
   return $row;
 }
 
+sub get_log_handle {
+  my $id = shift;
+  my $sth = $db->prepare("SELECT * FROM request_audit WHERE rid = ?");
+  $sth->execute($id) || die $db->errstr;
+  return $sth;
+}
+
 sub update_db {
   my $hash = shift;
-  my @fields = grep !/id/, @request_fields;
+  my @fields = grep !/^id$|^created$/, @request_fields;
 
   my $sql = "UPDATE request SET ";
   foreach (@fields) {
@@ -211,6 +239,26 @@ sub load_requests {
   return \@list;
 }
 
+sub differences {
+  my ($old, $new) = @_;
+  my @diffs;
+  foreach (@request_fields) {
+    if ($old->{$_} ne $new->{$_}) {
+        push @diffs, "$_: changed from $old->{$_} to $new->{$_}";
+    }
+  }
+  return @diffs;
+}
+  
+sub add_audit {
+  my ($id, $type, $entry) = @_;
+  # ignore some things
+  return if ($entry =~ /^modified/);
+  my $sth = $db->prepare("INSERT INTO request_audit (rid, type, entry) VALUES (?, ?, ?)");
+  $sth->execute($id, $type, $entry) || die $db->errstr;
+  return;    
+}
+
 __DATA__
 
 @@ index.html.ep
@@ -222,6 +270,20 @@ Welcome to Mojolicious!
 % layout 'default';
 % title 'Request ' . param('id') . ' - ' . param('subject');
 <%= include 'req_form' %>
+<%= include 'req_logs' %>
+
+@@ req_logs.html.ep
+<table>
+% while (my $log = $log_sth->fetchrow_hashref) {
+<tr>
+  <th>
+    <%= $log->{type} %>
+  </th><td>
+    <%= $log->{entry} %>
+  </td>
+</tr>
+% }
+</table>
 
 @@ req_add.html.ep
 % layout 'default';
@@ -267,6 +329,10 @@ Welcome to Mojolicious!
     <td><%= check_box 'complete' => 1 %></td>
   </tr>
 
+  <tr>
+    <th>Log:</th>
+    <td><%= text_area 'log', rows => 8, cols => 45 - $size_adjust %></td>
+  </tr>
 </table>
 
 <%= submit_button %>
