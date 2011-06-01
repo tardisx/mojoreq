@@ -21,6 +21,11 @@ feature list will grow.
 
 Installing (this will be easier in future):
 
+# Install some dependencies:
+$ sudo cpan Mojolicious
+$ sudo cpan DBD::SQLite
+$ sudo cpan Time::Duration
+
 # make a directory for the thing
 $ mkdir mojoreq
 
