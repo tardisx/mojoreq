@@ -65,6 +65,8 @@ post '/req/:req' => [req => qr/\d+/]  => sub {
   };
   if ($@) {
     $self->stash->{error} = $@;
+    # load the logs again since we are going to redisplay
+    $self->stash->{log_sth} = get_log_handle($req_id);
     $self->render('req');
   }
   else {
