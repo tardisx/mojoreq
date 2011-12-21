@@ -50,6 +50,7 @@ get '/req/add' => sub {
 
 post '/req/:req' => [req => qr/\d+/]  => sub {
   my $self = shift;
+  my $req_id = $self->param('req');
 
   $self->stash->{products} = \@products;
   $self->stash->{categorys} = \@categorys;
@@ -63,6 +64,7 @@ post '/req/:req' => [req => qr/\d+/]  => sub {
       add_audit($id, 'change', $diff);
     }
   };
+  
   if ($@) {
     $self->stash->{error} = $@;
     # load the logs again since we are going to redisplay
@@ -187,7 +189,8 @@ sub load_db {
 
 sub get_log_handle {
   my $id = shift;
-  my $sth = $db->prepare("SELECT * FROM request_audit WHERE rid = ?");
+  my $sth = $db->prepare("SELECT * FROM request_audit WHERE rid = ?")
+    || die $db->errstr;
   $sth->execute($id) || die $db->errstr;
   return $sth;
 }
@@ -229,7 +232,8 @@ sub load_requests {
   my $args = shift || {};
   $args->{complete} = 0 if (! $args->{complete});
   
-  my $sth = $db->prepare("SELECT * FROM request WHERE complete = ?");
+  my $sth = $db->prepare("SELECT * FROM request WHERE complete = ?") 
+    || die $db->errstr;
   $sth->execute($args->{complete});
 
   my @list;
@@ -256,7 +260,8 @@ sub add_audit {
   my ($id, $type, $entry) = @_;
   # ignore some things
   return if ($entry =~ /^modified/);
-  my $sth = $db->prepare("INSERT INTO request_audit (rid, type, entry) VALUES (?, ?, ?)");
+  my $sth = $db->prepare("INSERT INTO request_audit (rid, type, entry) VALUES (?, ?, ?)")
+    || die $db->errstr;
   $sth->execute($id, $type, $entry) || die $db->errstr;
   return;    
 }
