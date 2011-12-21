@@ -425,17 +425,19 @@ Welcome to Mojolicious!
   
   <div class="container">
     <h1><%= title %></h1>
-    <div id="main">
-<% if (my $message = flash 'message' ) { %>
-      <span class="label success"><%= $message %></span>
-<% } %>
 <% if (my $error = stash 'error' ) { %>
-      <span class="label important"><%= $error %></span>
+    <div class="alert-message error">
+      <p><%= $error %></p>
+    </div>
 <% } %>
-      <%= content %>
+
+<% if (my $message = flash 'message' ) { %>
+    <div class="alert-message success">
+      <p><%= $message %></p>
     </div>
-    <div id="sidebar">
-    </div>
+<% } %>
+
+    <%= content %>
   </div>
   </body>
     
