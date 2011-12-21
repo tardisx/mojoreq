@@ -3,9 +3,10 @@
 use Mojolicious::Lite;
 use DBI;
 
-my @request_fields = qw/id subject description complete product category created modified/;
-my @products = qw/product1 product2/;
-my @categorys = qw/bug feature/;
+my @request_fields = qw/id       subject description complete product 
+                        category created modified/;
+my @products       = qw/product1 product2/;
+my @categorys      = qw/bug feature/;
 
 my $db = DBI->connect('dbi:SQLite:dbname=mojoreq.db') || die DBI->errstr;
 
@@ -34,9 +35,20 @@ get '/req/:req' => [req => qr/\d+/]  => sub {
   $self->stash->{categorys} = \@categorys;
   $self->stash->{log_sth}   = get_log_handle($req_id);
 
-  load_param_from_request_id($self, $req_id);
+  eval {
+    load_param_from_request_id($self, $req_id);
+  };
+  
+  if ($@ =~ /no row/) {
+    $self->stash->{error} = "no such request";
+    $self->render('error');
+    return;
+  }
 
-  $self->render('req');
+  else {
+    $self->render('req');
+    return;
+  }
 };
 
 get '/req/add' => sub {
@@ -65,7 +77,11 @@ post '/req/:req' => [req => qr/\d+/]  => sub {
     }
   };
   
-  if ($@) {
+  if ($@ =~ /no row/) {
+    $self->stash->{error} = "no such request";
+    $self->render('error');
+  }
+  elsif ($@) {
     $self->stash->{error} = $@;
     # load the logs again since we are going to redisplay
     $self->stash->{log_sth} = get_log_handle($req_id);
@@ -92,7 +108,7 @@ post '/req/add' => sub {
     $self->render('req_add');
   }
   else {
-    $self->flash(message => "Request " .$self->param('id') . " created."); 
+    $self->flash(message => "Request " .$self->param('id') . " created"); 
     $self->redirect_to('/req/'.$self->param('id'));
   }
 };
@@ -118,6 +134,10 @@ CREATE TABLE request_audit (
   type      TEXT NOT NULL,
   entry     TEXT NOT NULL
 );
+
+INSERT INTO request (id, subject, product, category, description, created, modified) 
+            VALUES  (10000, 'I should tell him awesome', 'bug', 'awesome', 
+                     'do it', 1, 1);
 
 =cut
 
@@ -273,6 +293,12 @@ __DATA__
 % title 'Welcome';
 Welcome to Mojolicious!
 
+@@ error.html.ep
+% layout 'default';
+% title 'Error';
+
+<p>Sorry, an error occurred.</p>
+
 @@ req.html.ep
 % layout 'default';
 % title 'Request ' . param('id') . ' - ' . param('subject');
@@ -382,118 +408,48 @@ Welcome to Mojolicious!
 % if ($self->req->headers->user_agent =~ /iPhone/) {
     <meta name="viewport" content="user-scalable=no, width=device-width" />
 % }
-  <style type="text/css" media="screen, print, projection">
-	body,
-	html {
-		margin:0;
-		padding:0;
-		color:#000;
-		background:#a7a09a;
-                font-family: Verdana, Arial, Helvetica, Sans-Serif;
-                font-size: 8pt;
-
-	}
-	#wrap {
-% if ($self->req->headers->user_agent =~ /iPhone/) {
-		width: device-width;
-% } else {
-		width:850px;
-% }
-		margin:0 auto;
-		background:#99c;
-	}
-	#header {
-    	padding:5px 10px;
-		background:#ddd;
-	}
-	h1 {
-	    margin:0;
-        }
-	#nav {
-		padding:5px 10px;
-		background:#c99;
-	}
-	#nav ul {
-		margin:0;
-		padding:0;
-		list-style:none;
-	}
-	#nav li {
-		display:inline;
-		margin:0;
-		padding:0;
-	}
-	#main {
-		float:left;
-% if ($self->req->headers->user_agent =~ /iPhone/) {
-		width: device-width;
-% } else {
-		width: 580px;
-% }
-		padding:10px;
-		background:#9c9;
-	}
-	h2 {
-		margin:0 0 1em;
-	}
-	#sidebar {
-		float:right;
-		width:230px;
-		padding:10px;
-		background:#99c;
-	}
-	#footer {
-		clear:both;
-		padding:5px 10px;
-		background:#cc9;
-	}
-	#footer p {
-		margin:0;
-        }
-        a:link    {color: blue}
-        a:visited {color: blue}
-        a:active  {color: blue}
-        a:hover   {color: red;}
-        p.message {
-                color: #32e;
-                font-size: 14px;
-        }
-        p.error {
-                color: #f00;
-                font-size: 14px;
-        }
-	* html #footer {
-		height:1px;
-	}
-	</style>
+    <link rel="stylesheet" href="http://twitter.github.com/bootstrap/1.4.0/bootstrap.min.css">
   </head>
-  <body>
-  <div id="wrap">
-    <div id="header">
-      <h1><%= title %></h1>
+  <body style="padding-top: 40px;">
+
+  <!-- Topbar -->
+  <div class="topbar" data-scrollspy="scrollspy" >
+    <div class="topbar-inner">
+      <div class="container">
+        <a class="brand" href="#">Mojoreq</a>
+        <ul class="nav">
+          <li><a href="/req/add">Add</a></li>
+          <li><a href="/list/open">Open Requests</a></li>
+        </ul>
+      </div>
     </div>
-    <div id="nav">
-      <ul>
-        <li>[<a href="/req/add">Add a new request</a>]</li>
-        <li>[<a href="/list/open">List open requests</a>]</li>
-      </ul>
-    </div>
+  </div>
+
+  
+  <div class="container">
+    <h1><%= title %></h1>
     <div id="main">
 <% if (my $message = flash 'message' ) { %>
-      <p class="message"><%= $message %></p>
+      <span class="label success"><%= $message %></span>
 <% } %>
 <% if (my $error = stash 'error' ) { %>
-      <p class="error"><%= $error %></p>
+      <span class="label important"><%= $error %></span>
 <% } %>
       <%= content %>
     </div>
     <div id="sidebar">
     </div>
-    <div id="footer">
-      <p>MojoReq: [<a href="https://github.com/tardisx/mojoreq">https://github.com/tardisx/mojoreq</a>]</p>
-    </div>
   </div>
-</body>
+  </body>
+    
+  <footer class="footer">
+      <div class="container">
+        <p class="pull-right"><a href="#">Back to top</a></p>
+        <p>MojoReq: [<a href="https://github.com/tardisx/mojoreq">https://github.com/tardisx/mojoreq</a>]</p>
+      </div>
+  </footer>
+
+
 </html>
 
 @@ apple.png (base64)
