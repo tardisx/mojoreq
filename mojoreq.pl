@@ -118,14 +118,14 @@ app->start;
 =pod
 
 CREATE TABLE request (
-  id       INTEGER PRIMARY KEY,
-  subject  TEXT NOT NULL,
-  product  TEXT NOT NULL,
-  category TEXT NOT NULL,
+  id          INTEGER PRIMARY KEY,
+  subject     TEXT NOT NULL,
+  product     TEXT NOT NULL,
+  category    TEXT NOT NULL,
   description TEXT NOT NULL,
-  created  INTEGER NOT NULL,
-  modified INTEGER NOT NULL,
-  complete BOOLEAN DEFAULT 0
+  created     INTEGER NOT NULL,
+  modified    INTEGER NOT NULL,
+  complete    BOOLEAN DEFAULT 0
 );
 
 CREATE TABLE request_audit (
@@ -135,9 +135,6 @@ CREATE TABLE request_audit (
   entry     TEXT NOT NULL
 );
 
-INSERT INTO request (id, subject, product, category, description, created, modified) 
-            VALUES  (10000, 'I should tell him awesome', 'bug', 'awesome', 
-                     'do it', 1, 1);
 
 =cut
 
