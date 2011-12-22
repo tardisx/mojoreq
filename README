@@ -28,9 +28,14 @@ $ sudo cpan Time::Duration
 
 # make a directory for the thing
 $ mkdir mojoreq
+$ cd mojoreq
 
 # grab the source:
 $ wget https://github.com/tardisx/mojoreq/raw/master/mojoreq.pl > mojoreq.pl
+
+# edit the configuration
+$ cp mojoreq.json-sample mojoreq.json
+$ $EDITOR mojoreq.json
 
 # run it
 $ ./mojoreq.pl daemon --listen http://\*:3000

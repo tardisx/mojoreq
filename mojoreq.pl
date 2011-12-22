@@ -3,10 +3,12 @@
 use Mojolicious::Lite;
 use DBI;
 
-my @request_fields = qw/id       subject description complete product 
+my @request_fields = qw/id subject description complete product 
                         category created modified/;
-my @products       = qw/product1 product2/;
-my @categorys      = qw/bug feature/;
+my $config = plugin 'JSONConfig';
+
+my @products       = @{ $config->{products} };
+my @categorys      = @{ $config->{categories} };
 
 my $dbname = 'mojoreq.db';
 
@@ -285,7 +287,9 @@ CREATE TABLE request (
   modified    INTEGER NOT NULL,
   complete    BOOLEAN DEFAULT 0
 );
+') || die "Could not initialise DB: " . $db->errstr;
 
+    $db->do('
 CREATE TABLE request_audit (
   id        INTEGER PRIMARY KEY,
   rid       INTEGER REFERENCES request(id),
@@ -293,7 +297,8 @@ CREATE TABLE request_audit (
   entry     TEXT NOT NULL
 );
 ') || die "Could not initialise DB: " . $db->errstr;
-  warn "Database initialised.\n";
+
+    warn "Database initialised.\n";
 
   }
   return $db;
