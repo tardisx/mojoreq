@@ -434,10 +434,11 @@ Welcome to Mojolicious!
   <div class="topbar" data-scrollspy="scrollspy" >
     <div class="topbar-inner">
       <div class="container">
-        <a class="brand" href="#">Mojoreq</a>
+        <a class="brand" href="/">Mojoreq</a>
         <ul class="nav">
-          <li><a href="/req/add">Add</a></li>
+          <li><a href="/req/add">Add Request</a></li>
           <li><a href="/list/open">Open Requests</a></li>
+          <li><a href="/list/closed">Closed Requests</a></li>
         </ul>
       </div>
     </div>
