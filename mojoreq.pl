@@ -8,8 +8,12 @@ my @request_fields = qw/id       subject description complete product
 my @products       = qw/product1 product2/;
 my @categorys      = qw/bug feature/;
 
-my $db = DBI->connect('dbi:SQLite:dbname=mojoreq.db') || die DBI->errstr;
+my $dbname = 'mojoreq.db';
 
+# get a DBH handle, initialising the DB if necessary.
+my $db = initialise_db();
+
+# routes
 get '/' => sub {
   my $self = shift;
   $self->redirect_to('/list/open');
@@ -114,29 +118,6 @@ post '/req/add' => sub {
 };
 
 app->start;
-
-=pod
-
-CREATE TABLE request (
-  id          INTEGER PRIMARY KEY,
-  subject     TEXT NOT NULL,
-  product     TEXT NOT NULL,
-  category    TEXT NOT NULL,
-  description TEXT NOT NULL,
-  created     INTEGER NOT NULL,
-  modified    INTEGER NOT NULL,
-  complete    BOOLEAN DEFAULT 0
-);
-
-CREATE TABLE request_audit (
-  id        INTEGER PRIMARY KEY,
-  rid       INTEGER REFERENCES request(id),
-  type      TEXT NOT NULL,
-  entry     TEXT NOT NULL
-);
-
-
-=cut
 
 sub save_request_from_param {
   my $self = shift;
@@ -281,6 +262,41 @@ sub add_audit {
     || die $db->errstr;
   $sth->execute($id, $type, $entry) || die $db->errstr;
   return;    
+}
+
+sub initialise_db {
+
+  my $initdb = 0;
+  if (!-e $dbname) {
+    $initdb = 1;
+  }
+  
+  my $db = DBI->connect('dbi:SQLite:dbname=mojoreq.db') || die DBI->errstr;
+
+  if ($initdb) {
+    $db->do('
+CREATE TABLE request (
+  id          INTEGER PRIMARY KEY,
+  subject     TEXT NOT NULL,
+  product     TEXT NOT NULL,
+  category    TEXT NOT NULL,
+  description TEXT NOT NULL,
+  created     INTEGER NOT NULL,
+  modified    INTEGER NOT NULL,
+  complete    BOOLEAN DEFAULT 0
+);
+
+CREATE TABLE request_audit (
+  id        INTEGER PRIMARY KEY,
+  rid       INTEGER REFERENCES request(id),
+  type      TEXT NOT NULL,
+  entry     TEXT NOT NULL
+);
+') || die "Could not initialise DB: " . $db->errstr;
+  warn "Database initialised.\n";
+
+  }
+  return $db;
 }
 
 __DATA__

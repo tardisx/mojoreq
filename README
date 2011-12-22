@@ -32,10 +32,6 @@ $ mkdir mojoreq
 # grab the source:
 $ wget https://github.com/tardisx/mojoreq/raw/master/mojoreq.pl > mojoreq.pl
 
-# setup the db
-$ sqlite3 mojoreq.db
-# now paste the database schema from the mojoreq.pl
-
 # run it
 $ ./mojoreq.pl daemon --listen http://\*:3000
 
