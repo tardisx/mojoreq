@@ -357,7 +357,7 @@ Welcome to Mojolicious!
 <table>
   <tr>
     <th>Subject:</th>
-    <td><%= text_field 'subject', size => 45 - $size_adjust %></td>
+    <td><%= text_field 'subject', class => 'span12' %></td>
   </tr>
 
   <tr>
@@ -372,7 +372,7 @@ Welcome to Mojolicious!
 
   <tr>
     <th>Description:</th>
-    <td><%= text_area 'description', class => 'span12', rows => 8, cols => 75 - $size_adjust %></td>
+    <td><%= text_area 'description', class => 'span12', rows => 8 %></td>
   </tr>
 
   <tr>
@@ -382,7 +382,7 @@ Welcome to Mojolicious!
 
   <tr>
     <th>Log:</th>
-    <td><%= text_area 'log', class => 'span12', rows => 8, cols => 75 - $size_adjust %></td>
+    <td><%= text_area 'log', class => 'span12', rows => 8 %></td>
   </tr>
 </table>
 
