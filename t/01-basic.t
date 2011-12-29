@@ -13,8 +13,8 @@ $t->get_ok('/')
 
 # check the list page has links to add and new
 $t->get_ok('/list/open')
-  ->content_like(qr/Add a new request/)
-  ->content_like(qr/List open requests/);
+  ->content_like(qr/Add Request/)
+  ->content_like(qr/Open Requests/);
 
 # check the form contains our form fields
 $t->get_ok('/req/add')
