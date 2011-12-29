@@ -189,7 +189,8 @@ sub load_db {
 
 sub get_log_handle {
   my $id = shift;
-  my $sth = $db->prepare("SELECT * FROM request_audit WHERE rid = ?")
+  my $sth = 
+    $db->prepare("SELECT * FROM request_audit WHERE rid = ? ORDER BY ts")
     || die $db->errstr;
   $sth->execute($id) || die $db->errstr;
   return $sth;
@@ -260,9 +261,9 @@ sub add_audit {
   my ($id, $type, $entry) = @_;
   # ignore some things
   return if ($entry =~ /^modified/);
-  my $sth = $db->prepare("INSERT INTO request_audit (rid, type, entry) VALUES (?, ?, ?)")
+  my $sth = $db->prepare("INSERT INTO request_audit (rid, ts, type, entry) VALUES (?, ?, ?, ?)")
     || die $db->errstr;
-  $sth->execute($id, $type, $entry) || die $db->errstr;
+  $sth->execute($id, time(), $type, $entry) || die $db->errstr;
   return;    
 }
 
@@ -293,6 +294,7 @@ CREATE TABLE request (
 CREATE TABLE request_audit (
   id        INTEGER PRIMARY KEY,
   rid       INTEGER REFERENCES request(id),
+  ts        INTEGER NOT NULL,
   type      TEXT NOT NULL,
   entry     TEXT NOT NULL
 );
@@ -324,12 +326,17 @@ Welcome to Mojolicious!
 <%= include 'req_logs' %>
 
 @@ req_logs.html.ep
+% use Time::Duration qw/ago concise/;
 <table>
 % while (my $log = $log_sth->fetchrow_hashref) {
 <tr>
   <th>
     <%= $log->{type} %>
-  </th><td>
+  </th>
+  <td>
+    <%= concise(ago(time()-$log->{ts})) %>
+  </td>
+  <td>
     <%= $log->{entry} %>
   </td>
 </tr>
