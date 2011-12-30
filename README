@@ -33,7 +33,8 @@ $ cd mojoreq
 # grab the source:
 $ wget https://github.com/tardisx/mojoreq/raw/master/mojoreq.pl > mojoreq.pl
 
-# edit the configuration
+# grab and edit the configuration
+$ wget https://github.com/tardisx/mojoreq/raw/master/mojoreq.json-sample > mojoreq.json-sample
 $ cp mojoreq.json-sample mojoreq.json
 $ $EDITOR mojoreq.json
 
