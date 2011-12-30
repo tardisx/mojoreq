@@ -10,7 +10,7 @@ my $config = plugin 'JSONConfig';
 my @products       = @{ $config->{products} };
 my @categorys      = @{ $config->{categories} };
 
-my $dbname = 'mojoreq.db';
+my $dbname = $config->{db};
 
 # get a DBH handle, initialising the DB if necessary.
 my $db = initialise_db();
@@ -274,7 +274,7 @@ sub initialise_db {
     $initdb = 1;
   }
   
-  my $db = DBI->connect('dbi:SQLite:dbname=mojoreq.db') || die DBI->errstr;
+  my $db = DBI->connect("dbi:SQLite:dbname=$dbname") || die DBI->errstr;
 
   if ($initdb) {
     $db->do('

@@ -1,4 +1,5 @@
 {
-  "products" : [ "product1", "product2", "product3" ],
+  "db"         : "mojoreq.db",
+  "products"   : [ "product1", "product2", "product3" ],
   "categories" : [ "bug", "enhancement" ]
 }
