@@ -1,9 +1,49 @@
 #!/usr/bin/env perl
 
+################################################################################
+# Define the 'email' command package.
+package Mojolicious::Command::email;
 
+# Subclass
+use Mojo::Base 'Mojo::Command';
+
+# Take care of command line options
+use Getopt::Long 'GetOptions';
+
+# Short description
+has description => <<'EOF';
+My first Mojo command.
+EOF
+
+# Short usage message
+has usage => <<"EOF";
+usage: $0 email [OPTIONS]
+
+These options are available:
+* TBA
+EOF
+
+sub run {
+  my $self = shift;
+
+  # Handle options
+  local @ARGV = @_;
+  # GetOptions('something' => sub { $something = 1 });
+
+  # digest the email
+  local $/ = undef;
+  my $email = <>;
+
+  warn "Unimplemented - sorry\n";
+  exit 1;
+}
+
+################################################################################
+# main package here
 package main;
 
 use Mojolicious::Lite;
+
 use DBI;
 
 my @request_fields = qw/id subject description complete product 
@@ -310,43 +350,6 @@ CREATE TABLE request_audit (
 }
 
 ################################################################################
-
-# Define the 'email' command.
-package Mojolicious::Command::email;
-
-# Subclass
-use Mojo::Base 'Mojo::Command';
-
-# Take care of command line options
-use Getopt::Long 'GetOptions';
-
-# Short description
-has description => <<'EOF';
-My first Mojo command.
-EOF
-
-# Short usage message
-has usage => <<"EOF";
-usage: $0 email [OPTIONS]
-
-These options are available:
-* TBA
-EOF
-
-sub run {
-  my $self = shift;
-
-  # Handle options
-  local @ARGV = @_;
-  # GetOptions('something' => sub { $something = 1 });
-
-  # digest the email
-  local $/ = undef;
-  my $email = <>;
-
-  warn "Unimplemented - sorry\n";
-  exit 1;
-}
 
 __DATA__
 
