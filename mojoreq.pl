@@ -18,7 +18,7 @@ my $db = initialise_db();
 # routes
 get '/' => sub {
   my $self = shift;
-  $self->redirect_to('/list/open');
+  $self->redirect_to($self->url_for('liststate', state=>'open'));
 };
 
 get '/list/:state' => sub {
@@ -443,9 +443,9 @@ Welcome to Mojolicious!
       <div class="container">
         <a class="brand" href="/">Mojoreq</a>
         <ul class="nav">
-          <li><a href="/req/add">Add Request</a></li>
-          <li><a href="/list/open">Open Requests</a></li>
-          <li><a href="/list/closed">Closed Requests</a></li>
+          <li><a href="<%= url_for('reqadd') %>">Add Request</a></li>
+          <li><a href="<%= url_for('liststate', state => 'open') %>">Open Requests</a></li>
+          <li><a href="<%= url_for('liststate', state => 'closed') %>">Closed Requests</a></li>
         </ul>
       </div>
     </div>
