@@ -1,5 +1,8 @@
 #!/usr/bin/env perl
 
+
+package main;
+
 use Mojolicious::Lite;
 use DBI;
 
@@ -304,6 +307,45 @@ CREATE TABLE request_audit (
 
   }
   return $db;
+}
+
+################################################################################
+
+# Define the 'email' command.
+package Mojolicious::Command::email;
+
+# Subclass
+use Mojo::Base 'Mojo::Command';
+
+# Take care of command line options
+use Getopt::Long 'GetOptions';
+
+# Short description
+has description => <<'EOF';
+My first Mojo command.
+EOF
+
+# Short usage message
+has usage => <<"EOF";
+usage: $0 email [OPTIONS]
+
+These options are available:
+* TBA
+EOF
+
+sub run {
+  my $self = shift;
+
+  # Handle options
+  local @ARGV = @_;
+  # GetOptions('something' => sub { $something = 1 });
+
+  # digest the email
+  local $/ = undef;
+  my $email = <>;
+
+  warn "Unimplemented - sorry\n";
+  exit 1;
 }
 
 __DATA__
