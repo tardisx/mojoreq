@@ -2,6 +2,8 @@ use Test::More tests => 26;
 use Test::Mojo;
 use strict;
 
+$ENV{MOJO_CONFIG} = 'mojoreq.json-sample';
+
 use FindBin;
 require "$FindBin::Bin/../mojoreq.pl";
 
