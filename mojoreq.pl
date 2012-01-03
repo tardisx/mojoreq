@@ -74,13 +74,21 @@ get '/list/:state' => sub {
 
   my $state = $self->param('state');
   my $args = { complete => $state eq 'open' ? 0 : 1 };
-  $pager->total_entries(count_requests($args));
-  $pager->current_page($self->param('page') || 1);
 
-  my $list = load_requests($args, $pager);
+  my $list;
+  if ($self->param('page') && $self->param('page') eq 'all') {
+    $list = load_requests($args);
+    $self->stash->{pager} = undef;
+  }
+  else {
+    # use the pager
+    $pager->total_entries(count_requests($args));
+    $pager->current_page($self->param('page') || 1);
+    $list = load_requests($args, $pager);
+    $self->stash->{pager}    = $pager;
+  }
   
   $self->stash->{requests} = $list;
-  $self->stash->{pager}    = $pager;
   $self->render('list');
 };
 
@@ -299,9 +307,17 @@ sub load_requests {
 
   $args->{complete} = 0 if (! $args->{complete});
   
-  my $sth = $db->prepare("SELECT * FROM request WHERE complete = ? LIMIT ?, ?") 
-    || die $db->errstr;
-  $sth->execute($args->{complete}, $pager->skipped, $pager->entries_per_page);
+  my $sth;
+  if ($pager) {
+    $sth = $db->prepare("SELECT * FROM request WHERE complete = ? LIMIT ?, ?") 
+      || die $db->errstr;
+    $sth->execute($args->{complete}, $pager->skipped, $pager->entries_per_page);
+  }
+  else {
+    $sth = $db->prepare("SELECT * FROM request WHERE complete = ?")
+      || die $db->errstr;
+    $sth->execute($args->{complete});
+  } 
 
   my @list;
   
@@ -492,11 +508,13 @@ Welcome to Mojolicious!
 <p>No records</p>
 % }
 
-% if ($pager->previous_page) {
+% if (stash 'pager') {
+%   if ($pager->previous_page) {
 [ <a href="<%= url_for('current')->query(page => $pager->previous_page) %>">Prev</a> ]
-% }
-% if ($pager->next_page) {
+%   }
+%   if ($pager->next_page) {
 [ <a href="<%= url_for('current')->query(page => $pager->next_page) %>">Next</a> ]
+%   }
 % }
 
 @@ layouts/default.html.ep

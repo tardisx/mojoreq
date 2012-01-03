@@ -39,7 +39,7 @@ my $url = $t->tx->res->headers->header('location');
 my ($new_request_num) = ($url =~ /(\d+)$/);
 
 # now the list of open bugs should contain this bug
-$t->get_ok('/list/open')
+$t->get_ok('/list/open?page=all')
   ->content_like(qr/$new_request_num/)
   ->content_like(qr/$$/);   # and the subject
 
@@ -50,11 +50,11 @@ $t->post_form_ok("/req/$new_request_num",
                    complete => 1 })
   ->status_is(302);
 
-$t->get_ok('/list/open')
+$t->get_ok('/list/open?page=all')
   ->content_unlike(qr/$$/)   # should no longer see that subject
   ->content_like(qr/request $new_request_num updated/i); # but we should see the update message (flash)
 
 # and we should find it in the closed list
-$t->get_ok('/list/closed')
+$t->get_ok('/list/closed?page=all')
   ->content_like(qr/$new_request_num/)
   ->content_like(qr/$$/);   # and the subject
