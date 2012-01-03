@@ -25,6 +25,7 @@ Installing (this will be easier in future):
 $ sudo cpan Mojolicious
 $ sudo cpan DBD::SQLite
 $ sudo cpan Time::Duration
+$ sudo cpan Data::Page
 
 # make a directory for the thing
 $ mkdir mojoreq

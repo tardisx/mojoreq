@@ -45,6 +45,7 @@ package main;
 use Mojolicious::Lite;
 
 use DBI;
+use Data::Page;
 
 my @request_fields = qw/id subject description complete product 
                         category created modified/;
@@ -58,6 +59,10 @@ my $dbname = $config->{db};
 # get a DBH handle, initialising the DB if necessary.
 my $db = initialise_db();
 
+# initialise the pager
+my $pager = Data::Page->new();
+$pager->entries_per_page($config->{page_size});
+
 # routes
 get '/' => sub {
   my $self = shift;
@@ -69,10 +74,13 @@ get '/list/:state' => sub {
 
   my $state = $self->param('state');
   my $args = { complete => $state eq 'open' ? 0 : 1 };
+  $pager->total_entries(count_requests($args));
+  $pager->current_page($self->param('page') || 1);
 
-  my $list = load_requests($args);
+  my $list = load_requests($args, $pager);
   
   $self->stash->{requests} = $list;
+  $self->stash->{pager}    = $pager;
   $self->render('list');
 };
 
@@ -272,13 +280,28 @@ sub insert_db {
   return $id;
 }
 
-sub load_requests {
+sub count_requests {
   my $args = shift || {};
+
   $args->{complete} = 0 if (! $args->{complete});
   
-  my $sth = $db->prepare("SELECT * FROM request WHERE complete = ?") 
+  my $sth = $db->prepare("SELECT count(*) FROM request WHERE complete = ?")
     || die $db->errstr;
-  $sth->execute($args->{complete});
+  $sth->execute($args->{complete}) || die "query failed: " . $db->errstr;
+
+  return $sth->fetchrow_arrayref->[0];
+}
+
+
+sub load_requests {
+  my $args = shift || {};
+  my $pager = shift;
+
+  $args->{complete} = 0 if (! $args->{complete});
+  
+  my $sth = $db->prepare("SELECT * FROM request WHERE complete = ? LIMIT ?, ?") 
+    || die $db->errstr;
+  $sth->execute($args->{complete}, $pager->skipped, $pager->entries_per_page);
 
   my @list;
   
@@ -467,6 +490,13 @@ Welcome to Mojolicious!
  
 % if (! @$requests) {
 <p>No records</p>
+% }
+
+% if ($pager->previous_page) {
+[ <a href="<%= url_for('current')->query(page => $pager->previous_page) %>">Prev</a> ]
+% }
+% if ($pager->next_page) {
+[ <a href="<%= url_for('current')->query(page => $pager->next_page) %>">Next</a> ]
 % }
 
 @@ layouts/default.html.ep

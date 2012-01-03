@@ -1,5 +1,6 @@
 {
   "db"         : "mojoreq.db",
   "products"   : [ "product1", "product2", "product3" ],
-  "categories" : [ "bug", "enhancement" ]
+  "categories" : [ "bug", "enhancement" ],
+  "page_size"  : 50
 }
