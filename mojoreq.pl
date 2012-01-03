@@ -92,6 +92,13 @@ get '/list/:state' => sub {
   $self->render('list');
 };
 
+get '/search' => sub {
+  my $self = shift;
+
+  my $search_string = $self->param('q');
+  die "looking for $search_string";
+};
+
 get '/req/:req' => [req => qr/\d+/]  => sub {
   my $self = shift;
   my $req_id = $self->param('req');
@@ -306,21 +313,35 @@ sub load_requests {
   my $pager = shift;
 
   $args->{complete} = 0 if (! $args->{complete});
-  
-  my $sth;
-  if ($pager) {
-    $sth = $db->prepare("SELECT * FROM request WHERE complete = ? LIMIT ?, ?") 
-      || die $db->errstr;
-    $sth->execute($args->{complete}, $pager->skipped, $pager->entries_per_page);
+
+  my @where = ();
+  my @args  = ();
+  my $query = 'SELECT * FROM request ';
+  my $limit = '';
+
+  # in every query
+  push @where, "complete = ?";
+  push @args,  $args->{complete};
+
+  # search
+  if ($args->{query}) {
+    push @where, "description = ?";
+    push @args, $args->{query};
   }
-  else {
-    $sth = $db->prepare("SELECT * FROM request WHERE complete = ?")
-      || die $db->errstr;
-    $sth->execute($args->{complete});
-  } 
+
+  # add the where's
+  $query .= " WHERE " . join (' AND ', @where);
+
+  # add the limit if using the pager
+  if ($pager) {
+    $query .= ' LIMIT ?, ?';
+    push @args, $pager->skipped, $pager->entries_per_page;
+  }
+
+  my $sth = $db->prepare($query);
+  $sth->execute(@args) || die $db->errstr;
 
   my @list;
-  
   while (my $row = $sth->fetchrow_hashref()) {
     push @list, $row;
   }
@@ -542,6 +563,9 @@ Welcome to Mojolicious!
           <li><a href="<%= url_for('liststate', state => 'open') %>">Open Requests</a></li>
           <li><a href="<%= url_for('liststate', state => 'closed') %>">Closed Requests</a></li>
         </ul>
+        <form class="pull-left" action="/search">
+          <input name="q" type="text" placeholder="Search" />
+        </form>
       </div>
     </div>
   </div>
