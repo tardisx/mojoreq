@@ -509,12 +509,14 @@ Welcome to Mojolicious!
 % }
 
 % if (stash 'pager') {
+[ <a href="<%= url_for('current')->query(page => $pager->first_page) %>">First</a> ]
 %   if ($pager->previous_page) {
 [ <a href="<%= url_for('current')->query(page => $pager->previous_page) %>">Prev</a> ]
 %   }
 %   if ($pager->next_page) {
 [ <a href="<%= url_for('current')->query(page => $pager->next_page) %>">Next</a> ]
 %   }
+[ <a href="<%= url_for('current')->query(page => $pager->last_page) %>">Last</a> ]
 % }
 
 @@ layouts/default.html.ep
